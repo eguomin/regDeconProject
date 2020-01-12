@@ -1,0 +1,7 @@
+For 3 x 21.18G data, it taks 620 s to calcualte the overlap regions 16.3% Correlation coefficiecy values are 0.9335; 0.9366;
+
+then registration takes 64 x 2 + 20 = 150 s 
+
+
+3 small 6 GB, it takes 373 s to calculate the overlap. 
+coarse coeifficient is 0.92859; and 0.88911

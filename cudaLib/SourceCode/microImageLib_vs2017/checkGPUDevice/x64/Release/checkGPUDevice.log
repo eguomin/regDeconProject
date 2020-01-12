@@ -1,0 +1,10 @@
+﻿  check_gpu.cpp
+  Generating code
+  All 5 functions were compiled because no usable IPDB/IOBJ from previous compilation was found.
+  Finished generating code
+  checkGPUDevice.vcxproj -> D:\Program\gpuPackage\microImageLib\microImageLib\checkGPUDevice\..\bin\checkGPUDevice.exe
+  checkGPUDevice.vcxproj -> ..\bin\checkGPUDevice.pdb (Full PDB)
+  copy "C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\bin\cudart*.dll" "..\bin\"
+  C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\bin\cudart32_90.dll
+  C:\Program Files\NVIDIA GPU Computing Toolkit\CUDA\v9.0\bin\cudart64_90.dll
+          2 file(s) copied.

@@ -1,0 +1,9 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(387,5): warning MSB8028: The intermediate directory (x64\Release\) contains files shared from another project (deconSingleView.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  decon_dv.cpp
+  Generating code
+  1 of 5 functions (20.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  deconDualView_vs2017.vcxproj -> D:\Program\gpuPackage\microImageLib\microImageLib\deconDualView\..\bin\vs2017\deconDualView.exe
+  deconDualView_vs2017.vcxproj -> ..\bin\vs2017\deconDualView.pdb (Full PDB)

@@ -1,0 +1,9 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(387,5): warning MSB8028: The intermediate directory (x64\Release\) contains files shared from another project (checkGPUDevice.vcxproj, deconDualView.vcxproj, deconSingleView.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  reg3D.cpp
+  Generating code
+  0 of 5 functions ( 0.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  reg3D_vs2017.vcxproj -> D:\Program\gpuPackage\microImageLib\microImageLib\reg3D\..\bin\vs2017\reg3D.exe
+  reg3D_vs2017.vcxproj -> ..\bin\vs2017\reg3D.pdb (Full PDB)

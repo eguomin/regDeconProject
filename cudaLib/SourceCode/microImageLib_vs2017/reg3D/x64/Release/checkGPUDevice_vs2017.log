@@ -1,0 +1,9 @@
+﻿C:\Program Files (x86)\Microsoft Visual Studio\2017\Community\Common7\IDE\VC\VCTargets\Microsoft.CppBuild.targets(387,5): warning MSB8028: The intermediate directory (x64\Release\) contains files shared from another project (deconDualView.vcxproj, deconSingleView.vcxproj).  This can lead to incorrect clean and rebuild behavior.
+  check_gpu.cpp
+  Generating code
+  1 of 5 functions (20.0%) were compiled, the rest were copied from previous compilation.
+    0 functions were new in current compilation
+    0 functions had inline decision re-evaluated but remain unchanged
+  Finished generating code
+  checkGPUDevice_vs2017.vcxproj -> D:\Program\gpuPackage\microImageLib\microImageLib\checkGUPDevice\..\bin\vs2017\checkGPUDevice.exe
+  checkGPUDevice_vs2017.vcxproj -> ..\bin\vs2017\checkGPUDevice.pdb (Full PDB)
