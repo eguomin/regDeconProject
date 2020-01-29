@@ -37,7 +37,6 @@ RegB = uint16(reshape(h_regB.Value,sizeA));
 Matrix = tmxPtr.Value;
 unloadlibrary(lib_name); 
 
-
 M(1) = Matrix(4,1);
 M(2) = Matrix(4,2);
 M(3) = Matrix(4,3);
@@ -48,12 +47,13 @@ sz = sizeA(3);
 shiftB=[];
 shiftA=[];
 
+
 if M(1)>0 & M(1)<=sy & M(2)>0 & M(2)<=sx & M(3)>0 & M(3)<=sz % > > > a a a
           shiftB = RegB(1:end-M(1), 1:end-M(2),1:end-M(3));
           shiftA = stackA(1:end-M(1), 1:end-M(2),1:end-M(3));      
-    elseif M(1)<=0 & M(1)>-sy & M(2)<=0 & M(2)>-sx & M(3)<=0 & M(3)>-sz % < < < b b b         
+    elseif M(1)<=0 & M(1)>-sy & M(2)<=0 & M(2)>-sx & M(3)<=0 & M(3)>-sz % < < < b b b  
           shiftB = RegB(-M(1)+1:end,-M(2)+1:end,-M(3)+1:end);
-          shiftA = stackA(-M(1)+1:end,-M(2)+1:end,-M(3)+1:end);  
+          shiftA = stackA(-M(1)+1:end,-M(2)+1:end,-M(3)+1:end);       
     elseif M(1)>0 & M(1)<=sy & M(2)<=0 & M(2)>-sx & M(3)<=0 & M(3)>-sz % > < < a b b
         shiftB = RegB(1:end-M(1),-M(2)+1:end, -M(3)+1:end);
         shiftA = stackA(1:end-M(1),-M(2)+1:end, -M(3)+1:end);
@@ -69,7 +69,7 @@ if M(1)>0 & M(1)<=sy & M(2)>0 & M(2)<=sx & M(3)>0 & M(3)<=sz % > > > a a a
     elseif M(1)>0 & M(1)<=sy & M(2)<=0 & M(2)>-sx & M(3)>0 & M(3)<=sz  % > < > a b a
         shiftB = RegB(1:end-M(1),-M(2)+1:end,1:end-M(3));
         shiftA = stackA(1:end-M(1),-M(2)+1:end,1:end-M(3));
-    elseif M(1)<=0 & M(1)>sy & M(2)<=0 & M(2)>-sx & M(3)>0 & M(3)<=sz % < < > b b a
+    elseif M(1)<=0 & M(1)>-sy & M(2)<=0 & M(2)>-sx & M(3)>0 & M(3)<=sz % < < > b b a 
         shiftB = RegB(-M(1)+1:end, -M(2)+1:end, 1:end-M(3));
         shiftA = stackA(-M(1)+1:end, -M(2)+1:end, 1:end-M(3));
 end
@@ -81,6 +81,5 @@ end
   Coef = shiftA.*shiftB/(std(shiftA(:))*std(shiftB(:)));
   [ny, nx, nz] = size(shiftA);
   r = sum(Coef(:))/(ny*nx*nz);
-
   
 end

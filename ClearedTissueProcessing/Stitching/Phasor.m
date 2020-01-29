@@ -26,7 +26,7 @@ end
     
 Phasor(round(sy/2)-2:round(sy/2)+2,round(sx/2)-2:round(sx/2)+2,:) = 0;
 
-% WriteTifStack(single(Phasor),'k:\Phasor.tif','32');
+%WriteTifStack(single(Phasor),'k:\Phasor.tif','32');
 
 PhasorMax = max(Phasor(:));
 I = find(Phasor == PhasorMax);
@@ -69,7 +69,7 @@ if SubPixelFlag == 1
 end
 
 CoarseTraslation = size(Phasor)/2 - [Py, Px, Pz] + 1;
-a = round(CoarseTraslation)
+a = round(CoarseTraslation);
 b = round(CoarseTraslation)-[sy, sx, sz];
 p{1} = [a(1), a(2), a(3)];
 p{2} = [a(1), a(2), b(3)];
@@ -109,7 +109,7 @@ if GPU_Flag == 1
     elseif p{c}(1)>0 & p{c}(1)<=sy & p{c}(2)<=0 & p{c}(2)>-sx & p{c}(3)>0 & p{c}(3)<=sz  % > < > a b a
         shiftB = dataB_2(1:end-p{c}(1),-p{c}(2)+1:end,1:end-p{c}(3));
         shiftA = stackA_gpu(1:end-p{c}(1),-p{c}(2)+1:end,1:end-p{c}(3));
-    elseif p{c}(1)<=0 & p{c}(1)>sy & p{c}(2)<=0 & p{c}(2)>-sx & p{c}(3)>0 & p{c}(3)<=sz % < < > b b a
+    elseif p{c}(1)<=0 & p{c}(1)>-sy & p{c}(2)<=0 & p{c}(2)>-sx & p{c}(3)>0 & p{c}(3)<=sz % < < > b b a
         shiftB = dataB_2(-p{c}(1)+1:end, -p{c}(2)+1:end, 1:end-p{c}(3));
         shiftA = stackA_gpu(-p{c}(1)+1:end, -p{c}(2)+1:end, 1:end-p{c}(3));
     end
