@@ -18,6 +18,7 @@ int atrans3dgpu(float *h_out, float *iTmx, float *h_img, unsigned int *imSize1, 
 int atrans3dgpu_16bit(unsigned short *h_out, float *iTmx, unsigned short *h_img, unsigned int *imSize1, unsigned int *imSize2, int deviceNum);
 
 //// 3D registration
+bool checkmatrix(float *iTmx, long long int sx, long long int sy, long long int sz);
 int reg3d(float *h_reg, float *iTmx, float *h_img1, float *h_img2, unsigned int *imSize1, unsigned int *imSize2, int regChoice, int affMethod,
 	bool inputTmx, float FTOL, int itLimit, int deviceNum, int gpuMemMode, bool verbose, float *records);
 

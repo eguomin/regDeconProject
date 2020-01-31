@@ -479,7 +479,7 @@ LoadFlag = get(handles.LoadDataMemory,'Value');
 %AlignMethod = get(handles.AlignMethod,'Value');
 FileName = get(handles.FileInfo,'String');
 
-[dll_file, dll_path] = uigetfile('C:\Yicong_Program\CUDA_DLL\spimfusion_DLL\libapi_0605','select .h file');
+[dll_file, dll_path] = uigetfile('F:\projects\ClearedTissueProcessing\Stitching\MatlabCode\cudaLib\libapi','select .h file');
 dll_path = [dll_path, dll_file(1:end-2)];
 
 
@@ -550,7 +550,7 @@ for TileN = 1: TileX*TileY*TileZ
         Target = single(handles.TileHandle{N2}(ny-y_crop+1:end,1:DownX:end,1:DownZ:end)); % bottom of the top Tile   
         
        % [M1, Overlap, NCC, Reg1] = Phasor(Source, Target, 1, 1);        
-        [M, NCC, Reg] = RigidRegistration(Source, Target, dll_path);        
+        [M, NCC, Reg] = RigidRegistration(Source-min(Source(:)), Target-min(Target(:)), dll_path);        
         handles.FileInfo.String{end+2} = ['Correlation coefficient between Tile_', 'Y', num2str(y-1), '_X', num2str(x), ' and  Tile_Y', num2str(y), '_X', num2str(x), ' is ', num2str(NCC)];
         drawnow();
         
@@ -563,6 +563,12 @@ for TileN = 1: TileX*TileY*TileZ
         M_y(1) = M(1) + y_crop; % shift value from y dimension 
         M_y(2) = M(2)*DownX;
         M_y(3) = M(3)*DownZ;
+        
+        if (isnan(NCC)) || (NCC <=0.6)
+            M_y(1)=round(ny*0.15);
+            M_y(2)=0;
+            M_y(3)=0;
+        end
                 
         handles.py(x, y) = floor(M_y(1));  % p is phase shift in x, y, z. compare y vs. x. in intergral ; move up is positive; move left is positive
         handles.px(x, y) = floor(M_y(2));
@@ -581,12 +587,10 @@ for TileN = 1: TileX*TileY*TileZ
     if x>=2
         N1 = x + (y-1)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
         N2 = (x-1) + (y-1)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
-        x_crop = round(ny*handles.horizontal_overlap_x(N1));
+        x_crop = round(nx*handles.horizontal_overlap_x(N1));
         Source = single(handles.TileHandle{N1}(1:DownY:end,1:x_crop,1:DownZ:end)); % Left of this Tile
-        Target = single(handles.TileHandle{N2}(1:DownY:end,nx-x_crop+1:end,1:DownZ:end)); % right of the Left Tile
-        
-        [M, NCC, Reg] = RigidRegistration(Source, Target, dll_path);   
-        
+        Target = single(handles.TileHandle{N2}(1:DownY:end,nx-x_crop+1:end,1:DownZ:end)); % right of the Left Tile        
+        [M, NCC, Reg] = RigidRegistration(Source-min(Source(:)), Target-min(Target(:)), dll_path);   
         handles.FileInfo.String{end+2} = ['Correlation coefficient between Tile_', 'Y', num2str(y), '_X', num2str(x-1), ' and  Tile_Y', num2str(y), '_X', num2str(x), ' is ', num2str(NCC)];
         drawnow();      
         if SaveFlag == 1
@@ -597,17 +601,24 @@ for TileN = 1: TileX*TileY*TileZ
         
         M_x(1) = M(1)*DownY;
         M_x(2) = M(2) + x_crop;
-        M_x(3) = M(3)*DownZ;    
+        M_x(3) = M(3)*DownZ;
+        
+        if (isnan(NCC)) || (NCC <=0.6)
+            M_x(1)=0;
+            M_x(2)=round(nx*0.15);
+            M_x(3)=0;
+        end
+        
         handles.py(x, y) = floor(M_x(1));  % p is phase shift in x, y, z. compare y vs. x. in intergral ; move up is positive; move left is positive
         handles.px(x, y) = floor(M_x(2));
         handles.pz(x, y) = floor(M_x(3));
         handles.pys(x, y) = M_x(1) - handles.py(x, y); % ps is sub-pixel shift...
         handles.pxs(x, y) = M_x(2) - handles.px(x, y); 
         handles.pzs(x, y) = M_x(3) - handles.pz(x, y);
-        handles.sx(x, y) = -handles.px(x, y) + handles.sx(x-1, y) + nx; % new start position of the tile in the merged image based on X Shift
         if y==1
             handles.sy(x, y) = -handles.py(x, y) + handles.sy(x-1, y);
         end
+        handles.sx(x, y) = -handles.px(x, y) + handles.sx(x-1, y) + nx; % new start position of the tile in the merged image based on X Shift
         handles.sz(x, y) = -handles.pz(x, y) + handles.sz(x-1, y);
        % overlap_left{x,y} = floor([M_x(1), M_x(2)]);   
 
@@ -805,7 +816,7 @@ Overlap = zeros(handles.ny_merge,handles.nx_merge);
 
 for TileN = 1: TileX*TileY*TileZ
         [x, y, z] = ind2sub([TileX TileY TileZ], TileN);          
-        z1 = pos + handles.pz(x,y);
+        z1 = pos - handles.sz(x,y);
         z2 = z1 + 1;
         Slices = single(handles.TileHandle{TileN}(:,:,z1:z2));
         SliceXY = Slices(:,:,1)*(1-handles.pzs(y)) + Slices(:,:,2) * handles.pzs(y);  % for subpixel shift in z
@@ -818,6 +829,8 @@ for TileN = 1: TileX*TileY*TileZ
             handles.TileMerge = TileMerge;
 %         end
 end
+
+
 
 im_max = max(handles.TileMerge(:));
 im_min = min(handles.TileMerge(:));
@@ -900,10 +913,17 @@ end
  
  if idx1 == 1
     FileName = handles.FileName;
+    TileOrder = reshape(FileName, TileY, TileX, TileZ, TileC)';
  else
-    FileName = flip(handles.FileName);
+    FileName = handles.FileName;
+    TileOrder = reshape(FileName, TileY, TileX, TileZ, TileC)';
+    
+    for nn=1:TileX
+        TileOrder(nn,:)=flip(TileOrder(nn,:));
+    end
+    
  end
- TileOrder = reshape(FileName, TileX, TileY, TileZ, TileC);
+ 
  
   switch items2{idx2}
      case 'X Y Z C'
@@ -1113,10 +1133,13 @@ for TileN = 1: TileX*TileY*TileZ
     if y>=2
             N1 = x + (y-1)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
             N2 = x + (y-2)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
-%             WriteTifStack(TileDown{N1},'K:\StitcherTest\t1.tif','32');
-%             WriteTifStack(TileDown{N2},'K:\StitcherTest\t2.tif','32');
-           [M, Overlap, NCC] = Phasor(TileDown{N1}, TileDown{N2},GPU_Flag, 0);  
-           handles.vertical_overlap_y(TileN) = Overlap(1);
+       %     WriteTifStack(TileDown{N1},'K:\t1.tif','32');
+       %     WriteTifStack(TileDown{N2},'K:\t2.tif','32');
+            test1=TileDown{N1};
+            test2=TileDown{N2};
+            
+           [M, Overlap, NCC, RegB] = Phasor(TileDown{N1}-min(test1(:)), TileDown{N2}-min(test2(:)),GPU_Flag, 0);  
+           handles.vertical_overlap_y(TileN) = min(Overlap(1),0.5);
            handles.vertical_overlap_x(TileN) = Overlap(2);
            handles.vertical_overlap_z(TileN) = Overlap(3);
            handles.vertical_correlation(TileN) = NCC;
@@ -1127,9 +1150,11 @@ for TileN = 1: TileX*TileY*TileZ
     if x>=2
             N1 = x + (y-1)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
             N2 = (x-1) + (y-1)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
-            [M, Overlap, NCC] = Phasor(TileDown{N1}, TileDown{N2}, GPU_Flag, 0);
+            test1=TileDown{N1};
+            test2=TileDown{N2};
+            [M, Overlap, NCC] = Phasor(TileDown{N1}-min(test1(:)), TileDown{N2}-min(test2(:)), GPU_Flag, 0);
             handles.horizontal_overlap_y(TileN) = Overlap(1);
-            handles.horizontal_overlap_x(TileN) = Overlap(2);
+            handles.horizontal_overlap_x(TileN) = min(Overlap(2),0.5);
             handles.horizontal_overlap_z(TileN) = Overlap(3);
             handles.horizontal_correlation(TileN) = NCC;
             handles.FileInfo.String{end+2} = ['Overlap between Tile_', 'Y', num2str(y), '_X', num2str(x-1), ' and Tile_Y', num2str(y), '_X', num2str(x), ' is ', num2str(handles.horizontal_overlap_x(TileN))]; 
@@ -1197,8 +1222,8 @@ Overlap = zeros(handles.ny_merge,handles.nx_merge);
 
 for TileN = 1: TileX*TileY*TileZ
         [x, y, z] = ind2sub([TileX TileY TileZ], TileN);
-%       z1 = pos + handles.pz(x,y);
-        z1 = pos;
+       z1 = pos - handles.sz(x,y);
+%        z1 = pos;
         z2 = z1 + 1;
         Slices = single(handles.TileHandle{TileN+(c-1)*TileX*TileY*TileZ}(:,:,z1:z2));
         SliceXY = Slices(:,:,1)*(1-handles.pzs(y)) + Slices(:,:,2) * handles.pzs(y);  % for subpixel shift in z
@@ -1259,7 +1284,8 @@ nx = handles.nx_merge;
 nz = handles.nz_merge;
 
 % for cropping
-z_range = max(handles.sz(:)): min(handles.ez(:));
+%z_range = max(handles.sz(:)): min(handles.ez(:));
+z_range = 1: nz;
 y_range = max(handles.sy(:,1)): min(handles.ey(:,end));
 x_range = max(handles.sx(1,:)): min(handles.ex(end,:));
 
@@ -1293,7 +1319,7 @@ if SavingMode == 1  % Stack
         TileMerge = zeros(handles.ny_merge,handles.nx_merge);   
         for TileN = 1: TileX*TileY*TileZ
             [x, y, z] = ind2sub([TileX TileY TileZ], TileN);      
-            z1 = k + handles.pz(x,y);
+            z1 = k - handles.sz(x,y);
             z2 = z1 + 1;
             [ny1, nx1, nz1] = size(handles.TileHandle{TileN + (c-1)*TileX*TileY*TileZ});
              if z1>=1 & z2<=nz1
@@ -1330,7 +1356,7 @@ elseif SavingMode == 2  % single slices
         TileMerge = zeros(handles.ny_merge,handles.nx_merge);   
         for TileN = 1:TileX*TileY*TileZ
              [x, y, z] = ind2sub([TileX TileY TileZ], TileN);     
-             z1 = k + handles.pz(x,y);
+             z1 = k - handles.sz(x,y);
              z2 = z1 + 1;
              [ny1, nx1, nz1] = size(handles.TileHandle{TileN + (c-1)*TileX*TileY*TileZ});
              if z1>=1 & z2<=nz1
