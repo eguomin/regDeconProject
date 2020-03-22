@@ -479,7 +479,7 @@ LoadFlag = get(handles.LoadDataMemory,'Value');
 %AlignMethod = get(handles.AlignMethod,'Value');
 FileName = get(handles.FileInfo,'String');
 
-[dll_file, dll_path] = uigetfile('F:\projects\ClearedTissueProcessing\Stitching\MatlabCode\cudaLib\libapi','select .h file');
+[dll_file, dll_path] = uigetfile('C:\Yicong_Program\CUDA_DLL\spimfusion_DLL','select .h file');
 dll_path = [dll_path, dll_file(1:end-2)];
 
 
@@ -521,7 +521,8 @@ k = ((TileY+2) * TileZ) * (c-1);
         
 for TileN = 1: TileX*TileY*TileZ
     [x, y, z] = ind2sub([TileX TileY TileZ], TileN);
-    [ny, nx, nz] = size(handles.TileHandle{TileN});  % each tile only need to find the left and top tiles.  
+    [ny, nx, nz] = size(handles.TileHandle{TileN});  % each tile only need to find the left and top tiles.  size of current tile
+    TileDim{TileN} = [ny, nx, nz];
     
     if x==1 && y==1
         handles.sx(x,y) = 1;
@@ -533,21 +534,14 @@ for TileN = 1: TileX*TileY*TileZ
         overlap_left{1,1} = [0, 0];
     end
     
-%     if x==1 
-%         overlap_left{x,y} = [0, 0];
-%     end
-%     
-%     if y==1
-%         overlap_top{x,y} = [0, 0];
-%     end
-    
     if y>=2
         N1 = x + (y-1)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
         N2 = x + (y-2)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
-        handles.vertical_overlap_y(N1);
         y_crop = round(ny*handles.vertical_overlap_y(N1));
-        Source = single(handles.TileHandle{N1}(1:y_crop,1:DownX:end,1:DownZ:end));  % Top of this Tile
-        Target = single(handles.TileHandle{N2}(ny-y_crop+1:end,1:DownX:end,1:DownZ:end)); % bottom of the top Tile   
+        Source = single(handles.TileHandle{N1}(1:y_crop,1:DownX:end,1:DownZ:end));  % Top of this current Tile
+        
+        [ny2, nx2, nz2] = size(handles.TileHandle{N2}); 
+        Target = single(handles.TileHandle{N2}(ny2-y_crop+1:end,1:DownX:end,1:DownZ:end)); % bottom of the top Tile   
         
        % [M1, Overlap, NCC, Reg1] = Phasor(Source, Target, 1, 1);        
         [M, NCC, Reg] = RigidRegistration(Source-min(Source(:)), Target-min(Target(:)), dll_path);        
@@ -560,6 +554,8 @@ for TileN = 1: TileX*TileY*TileZ
             WriteTifStack(Reg,[handles.path,'Overlap_Top_AfterReg_', 'TileY', num2str(y), '_TileX', num2str(x),'.tif'],'32'); 
         end
         
+        y_crop
+        M(1)
         M_y(1) = M(1) + y_crop; % shift value from y dimension 
         M_y(2) = M(2)*DownX;
         M_y(3) = M(3)*DownZ;
@@ -579,7 +575,7 @@ for TileN = 1: TileX*TileY*TileZ
         if x==1
             handles.sx(x, y) = -handles.px(x, y) + handles.sx(x, y-1); % new start position of the tile in the merged image based on Y shift
         end
-        handles.sy(x, y) = -handles.py(x, y) + handles.sy(x, y-1) + ny;
+        handles.sy(x, y) = -handles.py(x, y) + handles.sy(x, y-1) + ny2;
         handles.sz(x, y) = -handles.pz(x, y) + handles.sz(x, y-1); 
 
         %overlap_top{x,y} = floor([M_y(1), M_y(2)]);
@@ -589,7 +585,8 @@ for TileN = 1: TileX*TileY*TileZ
         N2 = (x-1) + (y-1)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
         x_crop = round(nx*handles.horizontal_overlap_x(N1));
         Source = single(handles.TileHandle{N1}(1:DownY:end,1:x_crop,1:DownZ:end)); % Left of this Tile
-        Target = single(handles.TileHandle{N2}(1:DownY:end,nx-x_crop+1:end,1:DownZ:end)); % right of the Left Tile        
+         [ny2, nx2, nz2] = size(handles.TileHandle{N2});
+        Target = single(handles.TileHandle{N2}(1:DownY:end,nx2-x_crop+1:end,1:DownZ:end)); % right of the Left Tile        
         [M, NCC, Reg] = RigidRegistration(Source-min(Source(:)), Target-min(Target(:)), dll_path);   
         handles.FileInfo.String{end+2} = ['Correlation coefficient between Tile_', 'Y', num2str(y), '_X', num2str(x-1), ' and  Tile_Y', num2str(y), '_X', num2str(x), ' is ', num2str(NCC)];
         drawnow();      
@@ -618,7 +615,7 @@ for TileN = 1: TileX*TileY*TileZ
         if y==1
             handles.sy(x, y) = -handles.py(x, y) + handles.sy(x-1, y);
         end
-        handles.sx(x, y) = -handles.px(x, y) + handles.sx(x-1, y) + nx; % new start position of the tile in the merged image based on X Shift
+        handles.sx(x, y) = -handles.px(x, y) + handles.sx(x-1, y) + nx2; % new start position of the tile in the merged image based on X Shift
         handles.sz(x, y) = -handles.pz(x, y) + handles.sz(x-1, y);
        % overlap_left{x,y} = floor([M_x(1), M_x(2)]);   
 
@@ -761,8 +758,9 @@ for TileN = 1: TileX*TileY*TileZ
         crop_top{x,y} = 0;
     end
        
-    handles.W{x,y} = Weigth([ny, nx], [crop_top{x,y}, overlap_top{x,y}], [crop_bottom{x,y}, overlap_bottom{x,y}], [crop_left{x,y}, overlap_left{x,y}], [crop_right{x,y}, overlap_right{x,y}]);
-              
+     ny = TileDim{TileN}(1);
+     nx = TileDim{TileN}(2);
+    handles.W{x,y} = Weigth([ny, nx], [crop_top{x,y}, overlap_top{x,y}], [crop_bottom{x,y}, overlap_bottom{x,y}], [crop_left{x,y}, overlap_left{x,y}], [crop_right{x,y}, overlap_right{x,y}]);             
 end
 
 handles.ny_merge = max(handles.ey(:));
@@ -913,17 +911,15 @@ end
  
  if idx1 == 1
     FileName = handles.FileName;
-    TileOrder = reshape(FileName, TileY, TileX, TileZ, TileC)';
+    TileOrder = reshape(FileName, TileY, TileX, TileZ, TileC);
  else
     FileName = handles.FileName;
-    TileOrder = reshape(FileName, TileY, TileX, TileZ, TileC)';
-    
-    for nn=1:TileX
-        TileOrder(nn,:)=flip(TileOrder(nn,:));
-    end
-    
+    FileName = flip(FileName);
+    TileOrder = reshape(FileName, TileY, TileX, TileZ, TileC);
+       
+  
+   
  end
- 
  
   switch items2{idx2}
      case 'X Y Z C'
@@ -1135,10 +1131,8 @@ for TileN = 1: TileX*TileY*TileZ
             N2 = x + (y-2)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
        %     WriteTifStack(TileDown{N1},'K:\t1.tif','32');
        %     WriteTifStack(TileDown{N2},'K:\t2.tif','32');
-            test1=TileDown{N1};
-            test2=TileDown{N2};
             
-           [M, Overlap, NCC, RegB] = Phasor(TileDown{N1}-min(test1(:)), TileDown{N2}-min(test2(:)),GPU_Flag, 0);  
+           [M, Overlap, NCC, RegB] = Phasor(TileDown{N1}-min(TileDown{N1}(:)-100), TileDown{N2}-min(TileDown{N2}(:)-100),GPU_Flag, 0);  
            handles.vertical_overlap_y(TileN) = min(Overlap(1),0.5);
            handles.vertical_overlap_x(TileN) = Overlap(2);
            handles.vertical_overlap_z(TileN) = Overlap(3);
@@ -1150,9 +1144,7 @@ for TileN = 1: TileX*TileY*TileZ
     if x>=2
             N1 = x + (y-1)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
             N2 = (x-1) + (y-1)*TileX + (z-1)*TileX*TileY + (c-1)*TileX*TileY*TileZ;
-            test1=TileDown{N1};
-            test2=TileDown{N2};
-            [M, Overlap, NCC] = Phasor(TileDown{N1}-min(test1(:)), TileDown{N2}-min(test2(:)), GPU_Flag, 0);
+            [M, Overlap, NCC] = Phasor(TileDown{N1}-min(TileDown{N1}(:)), TileDown{N2}-min(TileDown{N2}(:)), GPU_Flag, 0);
             handles.horizontal_overlap_y(TileN) = Overlap(1);
             handles.horizontal_overlap_x(TileN) = min(Overlap(2),0.5);
             handles.horizontal_overlap_z(TileN) = Overlap(3);
@@ -1286,8 +1278,11 @@ nz = handles.nz_merge;
 % for cropping
 %z_range = max(handles.sz(:)): min(handles.ez(:));
 z_range = 1: nz;
-y_range = max(handles.sy(:,1)): min(handles.ey(:,end));
-x_range = max(handles.sx(1,:)): min(handles.ex(end,:));
+y_range = 1: ny;
+x_range = 1: nx;
+
+%y_range = max(handles.sy(:,1)): min(handles.ey(:,end));
+%x_range = max(handles.sx(1,:)): min(handles.ex(end,:));
 
 
 % loading all Tiles Handling
@@ -1366,6 +1361,7 @@ elseif SavingMode == 2  % single slices
              else 
                  SliceXY = zeros(ny1,nx1);
              end   
+             
              TileMerge(handles.sy(x,y):handles.ey(x,y),handles.sx(x,y):handles.ex(x,y)) = TileMerge(handles.sy(x,y):handles.ey(x,y),handles.sx(x,y):handles.ex(x,y)) + SliceXY.*handles.W{x,y}; % top lef is positive     
              %WriteTifStack(single(TileMerge),['K:\StitcherTest\Gut_down\WeightImage\TileMerge', num2str(TileN), '.tif'],'32');
         end        
