@@ -234,14 +234,21 @@ if(verboseFlag)
     line2 = squeeze(PSF_bp(:,Soy,Soz));
     figure,subplot(1,2,1);
     plot(1:Sx,line1/max(line1(:)),1:Sx,line2/max(line2(:)),'LineWidth',2);
+    xlabel('Pixel Position');
+    ylabel('Normalized Value');
     legend('Trad. bp',[ bp_type ' bp']);
+    title('Back Projector Profiles(Spacial Domain)');
+    
     
     line1 = squeeze(abs(OTF_flip(1:Sox,1,1)));
     line2 = squeeze(abs(OTF_bp(1:Sox,1,1)));
     subplot(1,2,2);
-    plot(1:Sox,line1/max(line1(1)),1:Sox,line2/max(line2(1)),'LineWidth',2);
+    plot(0:Sox-1,line1/max(line1(1)),0:Sox-1,line2/max(line2(1)),'LineWidth',2);
     hold on, plot(ones(1,13)*tx,0:0.1:1.2,'--r.');
-    legend('Trad. bp',[ bp_type ' bp'], 'res limit');
+    xlabel('Pixel Position');
+    ylabel('Normalized Value');
+    legend('Trad. bp',[ bp_type ' bp'], 'resolution limit');
+    title('Back Projectors Profiles(Frequency Domain)');
     disp('Back projector generated!!!');
 end
     
