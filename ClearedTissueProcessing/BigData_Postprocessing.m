@@ -139,7 +139,8 @@ tilez = ceil(nzA/CropStepZ)
 
 end_t = cputime - start_t;
 
-% CropRegDecon(lib_path, lib_name, file_path, filenameA, filenameB, Transformation_matrix, CropStepXY, CropStepZ, tilex, tiley,tilez,  RegFlag, DeconFlag, FlipFlag, GPU_M, GPU_C);
+disp(['crop registraiton ......']);
+CropRegDecon(lib_path, lib_name, file_path, filenameA, filenameB, Transformation_matrix, CropStepXY, CropStepZ, tilex, tiley,tilez,  RegFlag, DeconFlag, FlipFlag, GPU_M, GPU_C);
 
  disp(['crop registraiton done ! Stithcing now......']); 
 if tilez > 1
