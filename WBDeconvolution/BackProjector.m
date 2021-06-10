@@ -22,7 +22,8 @@ function [PSF_bp, OTF_bp] = BackProjector(PSF_fp, bp_type, alpha, beta, n, resFl
 % iRes: 1 x 3 array
 %      input resolution limit in 3 dimensions in terms of pixels;
 % verboseFlag:
-%      Show intermediate results
+%      0: hide log and intermediate results 
+%      1: show log and intermediate results 
 
 if(nargin == 1)
     bp_type = 'traditional';
@@ -64,6 +65,7 @@ if(nargin ==7)
 end
 % input PSF size and center
 [Sx, Sy, Sz] = size(PSF_fp);
+PSF_fp = single(PSF_fp);
 Scx = (Sx+1)/2; 
 Scy = (Sy+1)/2;
 Scz = (Sz+1)/2;
